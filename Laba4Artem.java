@@ -251,13 +251,12 @@ public class CsvReaderApp {
     public static void main(String[] args) {
         String csvFilePath = "foreign_names.csv";
         char separator = ';';
+        String outputFilePath = "people_output.txt"; 
 
         List<Person> people = readPeopleFromCsv(csvFilePath, separator);
 
-        // Вывод списка для проверки
-        for (Person person : people) {
-            System.out.println(person);
-        }
+        // Запись списка в текстовый файл для отладки
+        writePeopleToFile(people, outputFilePath);
     }
 
     /**
@@ -319,6 +318,25 @@ public class CsvReaderApp {
         }
 
         return people;
+    }
+
+    /**
+     * Записывает список объектов {@link Person} в текстовый файл.
+     *
+     * @param people         список объектов {@link Person}.
+     * @param outputFilePath путь к выходному текстовому файлу.
+     */
+    public static void writePeopleToFile(List<Person> people, String outputFilePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
+            for (Person person : people) {
+                writer.write(person.toString());
+                writer.newLine();
+            }
+            System.out.println("Список people успешно сформирован и записан в файл: " + outputFilePath + " для его проверки");
+        } catch (IOException e) {
+            System.err.println("Ошибка при записи в файл: " + outputFilePath);
+            e.printStackTrace();
+        }
     }
 
 }
