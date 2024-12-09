@@ -1,7 +1,8 @@
+//В директорию src была добавлена папка resources, в которую был помещён исходный файл foreign_names.csv, библиотеки opencsv и commons-lang3-3.12.0 подключены проекту, как .jar файлы
 pom.xml///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example</groupId>
@@ -29,8 +30,15 @@ pom.xml/////////////////////////////////////////////////////////////////////////
       <version>RELEASE</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
+
 
   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,6 +135,7 @@ public class Employee {
 }
 
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Department.java///////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,15 +216,13 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVParserBuilder;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * Главный класс программы, который читает данные из CSV-файла,
- * создает список сотрудников и выводит его в консоль.
+ * создает список сотрудников и выводит его в файл.
  */
 public class Main {
 
@@ -228,7 +235,7 @@ public class Main {
      *     <li>Создает пустую директорию департаментов.</li>
      *     <li>Читает данные сотрудников из CSV-файла.</li>
      *     <li>Создает список сотрудников и добавляет их в соответствующие департаменты.</li>
-     *     <li>Выводит список сотрудников в консоль.</li>
+     *     <li>Записывает список сотрудников в файл.</li>
      * </ul>
      * </p>
      *
@@ -237,6 +244,7 @@ public class Main {
     public static void main(String[] args) {
         String filePath = "foreign_names.csv"; // Имя CSV-файла в ресурсах
         char delimiter = ';'; // Разделитель в CSV-файле
+        String outputFilePath = "employees_output.txt"; // Имя выходного файла
 
         // Создание пустой директории департаментов
         Map<String, Department> deptDirectory = createDeptDirectory();
@@ -253,8 +261,9 @@ public class Main {
             // Чтение данных из CSV-файла и создание списка сотрудников
             List<Employee> staffList = readCsvAndCreateEmployeeList(fileStream, delimiter, deptDirectory);
 
-            // Вывод списка сотрудников в консоль
-            printEmployees(staffList);
+            // Запись списка сотрудников в файл
+            writeEmployeesToFile(staffList, outputFilePath);
+            System.out.printf("List с сотрудниками успешно сформирован и для его отладки записан в файл: %s%n", outputFilePath);
 
         } catch (Exception ex) {
             // Обработка исключений
@@ -338,36 +347,46 @@ public class Main {
     }
 
     /**
-     * Выводит список сотрудников в консоль.
+     * Записывает список сотрудников в файл.
      *
      * <p>
      * Для каждого сотрудника в списке:
      * <ul>
-     *     <li>Выводится его ID, имя, пол, департамент, зарплата и дата рождения.</li>
+     *     <li>Записывается его ID, имя, пол, департамент, зарплата и дата рождения.</li>
      * </ul>
      * </p>
      *
-     * @param staffList Список сотрудников для вывода.
+     * @param staffList      Список сотрудников для записи.
+     * @param outputFilePath Путь к выходному файлу.
+     * @throws IOException Если произошла ошибка при записи в файл.
      */
-    public static void printEmployees(List<Employee> staffList) {
+    public static void writeEmployeesToFile(List<Employee> staffList, String outputFilePath) throws IOException {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
-        // Итерация по списку сотрудников и вывод их данных
-        for (Employee staff : staffList) {
-            System.out.printf(
-                    "ID: %d, Имя: %s, Пол: %s, Отдел: %s, Зарплата: %.2f, Дата рождения: %s%n",
-                    staff.getEmployeeId(),
-                    staff.getFullName(),
-                    staff.getGenderIdentity(),
-                    staff.getWorkDepartment().getDepartmentName(),
-                    staff.getMonthlyIncome(),
-                    formatter.format(staff.getBirthdate())
-            );
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
+            // Запись заголовка
+            writer.write("ID,Имя,Пол,Отдел,Зарплата,Дата рождения");
+            writer.newLine();
+
+            // Итерация по списку сотрудников и запись их данных
+            for (Employee staff : staffList) {
+                String line = String.format(
+                        "%d,%s,%s,%s,%.2f,%s",
+                        staff.getEmployeeId(),
+                        staff.getFullName(),
+                        staff.getGenderIdentity(),
+                        staff.getWorkDepartment().getDepartmentName(),
+                        staff.getMonthlyIncome(),
+                        formatter.format(staff.getBirthdate())
+                );
+                writer.write(line);
+                writer.newLine();
+            }
         }
     }
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MainTest.java////////////////////////////////////////////////////////////////////////////////////////////////
@@ -377,7 +396,7 @@ package org.example;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
@@ -391,6 +410,7 @@ class MainTest {
 
     private InputStream fileStream;
     private final String filePath = "foreign_names.csv"; // Путь к тестовому файлу CSV
+    private final String outputFilePath = "test_employees_output.txt"; // Имя тестового выходного файла
 
     /**
      * Инициализация потока для чтения файла перед каждым тестом.
@@ -464,22 +484,53 @@ class MainTest {
     }
 
     /**
-     * Тестирует метод {@link Main#printEmployees(List)}.
-     * Проверяет, что вывод сотрудников в консоль выполняется без ошибок.
+     * Тестирует метод {@link Main#writeEmployeesToFile(List, String)}.
+     * Проверяет:
+     * <ul>
+     *     <li>Файл успешно создается и содержит данные сотрудников.</li>
+     *     <li>Данные первого сотрудника в файле соответствуют ожидаемым значениям.</li>
+     * </ul>
      *
-     * @throws Exception если происходит ошибка при чтении файла или создании списка сотрудников.
+     * @throws Exception если происходит ошибка при чтении файла или записи данных.
      */
     @Test
-    void testPrintEmployees() throws Exception {
+    void testWriteEmployeesToFile() throws Exception {
         char delimiter = ';';
 
         // Создаем директорию департаментов и список сотрудников
         Map<String, Department> deptDirectory = Main.createDeptDirectory();
         List<Employee> employeeList = Main.readCsvAndCreateEmployeeList(fileStream, delimiter, deptDirectory);
 
-        // Проверяем, что метод printEmployees работает без выброса исключений
-        assertDoesNotThrow(() -> Main.printEmployees(employeeList), "Метод printEmployees вызывает исключение.");
+        // Пишем сотрудников в файл
+        Main.writeEmployeesToFile(employeeList, outputFilePath);
+
+        // Проверяем, что файл создан
+        File outputFile = new File(outputFilePath);
+        assertTrue(outputFile.exists(), "Файл с результатами не был создан.");
+
+        // Проверяем содержимое файла
+        try (BufferedReader reader = new BufferedReader(new FileReader(outputFile))) {
+            // Пропускаем заголовок
+            String header = reader.readLine();
+            assertNotNull(header, "Файл пустой, заголовок отсутствует.");
+            assertEquals("ID,Имя,Пол,Отдел,Зарплата,Дата рождения", header, "Заголовок файла некорректен.");
+
+            // Проверяем первую строку данных
+            String firstLine = reader.readLine();
+            assertNotNull(firstLine, "Данные в файле отсутствуют.");
+
+            // Логируем фактическое содержимое первой строки
+            System.out.println("Фактическая строка данных: " + firstLine);
+
+            // Ожидаемое значение
+            String expectedFirstLine = "28281,Aahan,Male,I,4800,00,15.05.1970";
+            assertEquals(expectedFirstLine, firstLine, "Первая строка данных не совпадает с ожидаемой.");
+        } finally {
+            // Удаляем тестовый файл после проверки
+            outputFile.delete();
+        }
     }
+
 }
 
 
