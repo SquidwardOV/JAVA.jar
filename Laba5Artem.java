@@ -297,10 +297,22 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * Тестовый класс для проверки функциональности {@link Injector}.
+ * <p>
+ * Включает тесты для проверки корректности инъекции зависимостей, обработки ошибок и обработки различных сценариев.
+ */
 public class InjectorTest {
 
     /**
-     * Тест проверки успешной инъекции зависимостей.
+     * Тест проверяет успешную инъекцию зависимостей в объект {@link SomeBean}.
+     * <p>
+     * Создается временный файл `config.properties`, в котором указываются корректные сопоставления интерфейсов и их реализаций.
+     * Затем с помощью {@link Injector} выполняется инъекция зависимостей, и вызывается метод {@link SomeBean#foo()}.
+     * <p>
+     * Успешное выполнение метода {@code foo()} без выбрасывания исключений подтверждает корректность работы.
+     *
+     * @throws IOException если возникают ошибки при создании временного файла.
      */
     @Test
     public void testSuccessfulInjection() throws IOException {
@@ -320,7 +332,13 @@ public class InjectorTest {
     }
 
     /**
-     * Тест проверки обработки отсутствия реализации в config.properties.
+     * Тест проверяет поведение {@link Injector}, если в файле конфигурации отсутствует реализация для одного из интерфейсов.
+     * <p>
+     * Создается временный файл `config.properties`, содержащий запись только для одного интерфейса.
+     * После инъекции вызов метода {@link SomeBean#foo()} должен выбросить {@link RuntimeException},
+     * так как одно из полей объекта остается неинициализированным.
+     *
+     * @throws IOException если возникают ошибки при создании временного файла.
      */
     @Test
     public void testMissingImplementation() throws IOException {
@@ -340,7 +358,9 @@ public class InjectorTest {
     }
 
     /**
-     * Тест проверки некорректного пути к config.properties.
+     * Тест проверяет поведение {@link Injector}, если указан некорректный путь к файлу конфигурации.
+     * <p>
+     * Ожидается, что при попытке создать {@link Injector} с несуществующим файлом будет выброшено {@link IOException}.
      */
     @Test
     public void testInvalidConfigPath() {
@@ -349,7 +369,12 @@ public class InjectorTest {
     }
 
     /**
-     * Тест проверки некорректного класса в config.properties.
+     * Тест проверяет поведение {@link Injector}, если в файле конфигурации указано некорректное имя класса реализации.
+     * <p>
+     * Создается временный файл `config.properties`, в котором указан несуществующий класс для одного из интерфейсов.
+     * Ожидается, что попытка инъекции зависимостей вызовет {@link RuntimeException}.
+     *
+     * @throws IOException если возникают ошибки при создании временного файла.
      */
     @Test
     public void testInvalidClassInConfig() throws IOException {
@@ -363,11 +388,12 @@ public class InjectorTest {
         Injector injector = new Injector(tempConfig.getAbsolutePath());
         SomeBean someBean = new SomeBean();
 
-        // Проверяем, что RuntimeException выброшено из-за некорректного класса
+        // Проверяем, что выбрасывается исключение
         RuntimeException exception = assertThrows(RuntimeException.class, () -> injector.inject(someBean));
         assertTrue(exception.getMessage().contains("Failed to inject dependency"));
     }
 }
+
 
   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
