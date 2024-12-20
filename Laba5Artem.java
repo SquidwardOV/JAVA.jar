@@ -89,11 +89,11 @@ package org.example;
 
 /**
  * Реализация интерфейса {@link SomeInterface}.
- * Выводит "С наступающим" при вызове метода {@code doSomething()}.
+ * Выводит "Hello " при вызове метода {@code doSomething()}.
  */
 class SomeImpl implements SomeInterface {
     public void doSomething() {
-        System.out.println("С наступающим");
+        System.out.println("Hello ");
     }
 }
   
@@ -105,11 +105,11 @@ package org.example;
 
 /**
  * Альтернативная реализация интерфейса {@link SomeInterface}.
- * Выводит "С прошедшим" при вызове метода {@code doSomething()}.
+ * Выводит "Goodbye " при вызове метода {@code doSomething()}.
  */
 class OtherImpl implements SomeInterface {
     public void doSomething() {
-        System.out.println("С прошедшим");
+        System.out.println("Goodbye ");
     }
 }
   
@@ -121,11 +121,11 @@ package org.example;
 
 /**
  * Реализация интерфейса {@link SomeOtherInterface}.
- * Выводит "Новым годом!" при вызове метода {@code doSomeOther()}.
+ * Выводит "World!" при вызове метода {@code doSomeOther()}.
  */
 class SODoer implements SomeOtherInterface {
     public void doSomeOther() {
-        System.out.println("Новым годом!");
+        System.out.println("World!");
     }
 }
   
